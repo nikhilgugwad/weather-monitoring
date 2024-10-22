@@ -123,6 +123,22 @@ def insert_weather_data(data):
 
     print(f"Data for {data['city']} inserted successfully.")
 
+def get_latest_weather_data(city):
+    """Retrieve the latest two weather data entries for a specific city."""
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+
+    query = """
+    SELECT temp, timestamp FROM weather_data
+    WHERE city = ?
+    ORDER BY timestamp DESC LIMIT 2
+    """
+    cursor.execute(query, (city,))
+    rows = cursor.fetchall()  # Fetch two latest rows
+    conn.close()
+
+    return rows if len(rows) == 2 else None
+
 # Test the database setup
 # Test the functions
 if __name__ == "__main__":
