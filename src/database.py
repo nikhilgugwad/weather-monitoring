@@ -1,4 +1,5 @@
 import sqlite3  # SQLite library to interact with the database
+from collections import Counter
 
 DB_NAME = "weather.db"  # Database file name
 
@@ -19,10 +20,88 @@ def create_table():
     )
     """
     cursor.execute(query)  # Execute the query to create the table
+
+    # Create daily_summary table for storing aggregates
+    summary_query = """
+    CREATE TABLE IF NOT EXISTS daily_summary (
+        date TEXT PRIMARY KEY,
+        city TEXT NOT NULL,
+        avg_temp REAL,
+        max_temp REAL,
+        min_temp REAL,
+        dominant_weather TEXT
+    )
+    """
+    cursor.execute(summary_query)
+
     conn.commit()  # Commit the changes
     conn.close()  # Close the database connection
+    print("Databases and tables created successfully.")
 
-    print("Database and table created successfully.")
+def calculate_daily_summary(city, date):
+    """Calculate daily summary for a given city and date."""
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+
+    # Fetch all weather records for the specified city and date
+    query = """
+    SELECT temp, weather_main FROM weather_data
+    WHERE city = ? AND DATE(timestamp, 'unixepoch') = ?
+    """
+    cursor.execute(query, (city, date))
+    rows = cursor.fetchall()
+
+    # If no data is found, return None
+    if not rows:
+        print(f"No data found for {city} on {date}")
+        return None
+
+    # Calculate min, max, and average temperatures
+    temps = [row[0] for row in rows]
+    avg_temp = sum(temps) / len(temps)
+    max_temp = max(temps)
+    min_temp = min(temps)
+
+    # Find the dominant weather condition
+    weather_conditions = [row[1] for row in rows]
+    dominant_weather = Counter(weather_conditions).most_common(1)[0][0]
+
+    # Debug: Print calculated values
+    # print(f"Summary for {city} on {date}: Avg={avg_temp}, Max={max_temp}, Min={min_temp}, Dominant={dominant_weather}")
+
+    # Insert or update the summary into the daily_summary table
+    # If your table contains a date which matches the date which we trying to insert, then a new row will not be created instead it will update the preexisting row whach has the same date, beacuse date is a unique constraint whcih should not have duplicate elements in the table, if you have multiple cities that share the same date in your table "daily_summary" then do update city as following in "insert_query" "city = excluded.city", ask chatbot for more clarification regarding excluded notation.  
+    
+    insert_query = """
+    INSERT INTO daily_summary (date, city, avg_temp, max_temp, min_temp, dominant_weather)
+    VALUES (?, ?, ?, ?, ?, ?)
+    ON CONFLICT(date) DO UPDATE SET
+        avg_temp = excluded.avg_temp,
+        max_temp = excluded.max_temp,
+        min_temp = excluded.min_temp,
+        dominant_weather = excluded.dominant_weather
+    """
+    cursor.execute(insert_query, (date, city, avg_temp, max_temp, min_temp, dominant_weather))
+    
+    conn.commit()
+    conn.close()
+
+def get_daily_summary(city, date):
+    """Retrieve the daily summary for a specific city and date."""
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+
+    query = "SELECT * FROM daily_summary WHERE city = ? AND date = ?"
+    cursor.execute(query, (city, date))
+    summary = cursor.fetchone()
+    conn.close()
+
+    if summary:
+        print(f"Summary for {city} on {date}: {summary}")
+        return summary
+    else:
+        print(f"No summary found for {city} on {date}")
+        return None
 
 def insert_weather_data(data):
     """Insert a weather data record into the weather_data table."""
@@ -45,5 +124,8 @@ def insert_weather_data(data):
     print(f"Data for {data['city']} inserted successfully.")
 
 # Test the database setup
+# Test the functions
 if __name__ == "__main__":
     create_table()  # Create the table when the script is run
+    calculate_daily_summary("Delhi", "2024-10-22") # Example test
+    get_daily_summary("Delhi", "2024-10-22")
