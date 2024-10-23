@@ -86,21 +86,28 @@ def calculate_daily_summary(city, date):
     conn.commit()
     conn.close()
 
-def get_daily_summary(city, date):
+def get_daily_summary(city, date=None):
     """Retrieve the daily summary for a specific city and date."""
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
 
-    query = "SELECT * FROM daily_summary WHERE city = ? AND date = ?"
-    cursor.execute(query, (city, date))
-    summary = cursor.fetchone()
+    if date:
+        # If a specific date is provided, search for that date
+        query = "SELECT * FROM daily_summary WHERE city = ? AND date = ?"
+        cursor.execute(query, (city, date))
+    else:
+        # If no date is provided, fetch all summaries for the city
+        query = "SELECT * FROM daily_summary WHERE city = ?"
+        cursor.execute(query, (city,))
+
+    summary = cursor.fetchall() # Use fetchall() to get multiple rows
     conn.close()
 
     if summary:
-        print(f"Summary for {city} on {date}: {summary}")
+        print(f"Found {len(summary)} summaries for {city}.")
         return summary
     else:
-        print(f"No summary found for {city} on {date}")
+        print(f"No summary found for {city}.")
         return None
 
 def insert_weather_data(data):

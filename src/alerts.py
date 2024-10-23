@@ -1,12 +1,14 @@
 import json
 from database import get_latest_weather_data
 
+# Step 1: Load the user configuration from config.json
 with open("src/config.json", "r") as config_file:
     config = json.load(config_file)
 
-threshold = config["temperature_threshold"]
-alert_city = config["alert_city"]
+threshold = config["temperature_threshold"] # User-defined temperature threshold
+alert_city = config["alert_city"]  # City to monitor
 
+# Step 2: Fetch the latest two weather updates for the specified city
 latest_updates = get_latest_weather_data(alert_city)
 if latest_updates:
     temp1, time1 = latest_updates[0]  # Most recent entry
