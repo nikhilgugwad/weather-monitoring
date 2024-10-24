@@ -1,7 +1,7 @@
 import schedule
 import time
 import json
-from alerts import * # Triggers alerts when imported
+from alerts import check_alerts 
 from database import calculate_daily_summary, insert_weather_data # Functions from database.py
 
 def load_config():
@@ -26,6 +26,7 @@ def job_manual_insert(city):
 def job_check_alerts():
     """Check for temperature alerts."""
     print("Checking temperature alerts...")
+    print(check_alerts())
 
 def job_update_summary(city):
     """Update daily summary for the city at the end of the day."""

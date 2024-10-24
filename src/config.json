@@ -1,4 +1,4 @@
 {
-    "temperature_threshold": 35,
+    "temperature_threshold": 30,
     "alert_city": "Delhi"
 }
