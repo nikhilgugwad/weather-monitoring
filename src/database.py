@@ -150,5 +150,5 @@ def get_latest_weather_data(city):
 # Test the functions
 if __name__ == "__main__":
     create_table()  # Create the table when the script is run
-    calculate_daily_summary("Delhi", "2024-10-22") # Example test
-    get_daily_summary("Delhi", "2024-10-22")
+    calculate_daily_summary("Delhi", "2024-10-24") # Example test
+    print(get_daily_summary("Delhi")) # We can use print() to see the available summaries

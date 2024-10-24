@@ -86,7 +86,7 @@ def plot_alerts_timeline(city):
 
     # Plot the timeline 
     fig, ax = plt.subplots()
-    ax.plot_date(alert_dates, [1] * len(alert_dates), 'r|', markersize=12) # Red markers for alerts
+    ax.plot(alert_dates, [1] * len(alert_dates), 'r|', markersize=12) # Red markers for alerts
     ax.set_yticks([]) # Hide y-axis ticks
     ax.set_title(f'Temperature Alerts Timeline for {city}')
     ax.xaxis.set_major_locator(mdates.DayLocator())
