@@ -1,5 +1,11 @@
-# API Key for OpenWeatherMap API
-API_KEY = "2ee97be830bf48de065739854cb8e914"
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from the .env file
+load_dotenv()
+
+# API Key for OpenWeatherMap API (Get the API_KEY from the environment variables)
+API_KEY = os.getenv('API_KEY')
 
 # List of cities to monitor
 CITIES = ["Delhi", "Mumbai", "Chennai", "Bangalore", "Kolkata", "Hyderabad"]

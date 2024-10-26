@@ -1,13 +1,10 @@
-import json
 from database import get_latest_weather_data
+from config import TEMP_THRESHOLD
 
-def check_alerts():
-    # Step 1: Load the user configuration from config.json
-    with open("src/config.json", "r") as config_file:
-        config = json.load(config_file)
+def check_alerts(city):
 
-    threshold = config["temperature_threshold"] # User-defined temperature threshold
-    alert_city = config["alert_city"]  # City to monitor
+    threshold = TEMP_THRESHOLD # User-defined temperature threshold
+    alert_city = city  # City to monitor
 
     # Step 2: Fetch the latest two weather updates for the specified city
     latest_updates = get_latest_weather_data(alert_city)

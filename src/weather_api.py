@@ -1,6 +1,6 @@
 import requests  # Library to make HTTP requests
-from config.config import API_KEY, BASE_URL, CITIES  # Importing configurations
-from src.database import insert_weather_data  # Importing insert function
+from config import API_KEY, BASE_URL, CITIES  # Importing configurations
+from database import insert_weather_data  # Importing insert function
 
 
 def get_weather_data(city):
