@@ -1,26 +1,51 @@
+"""
+This module checks for temperature alerts in a specified city.
+
+It retrieves the latest weather data for the city and compares the temperature
+with a user-defined threshold. If the temperature exceeds the threshold,
+an alert message is printed.
+"""
+
 from database import get_latest_weather_data
 from config import TEMP_THRESHOLD
 
-def check_alerts(city):
+def check_alerts(city: str) -> None:
+    """
+    Checks for temperature alerts in the given city.
 
-    threshold = TEMP_THRESHOLD # User-defined temperature threshold
-    alert_city = city  # City to monitor
+    Retrieves the latest weather data and compares the most recent temperatures
+    against a predefined threshold. Alerts are printed if the temperature
+    exceeds the threshold.
 
-    # Step 2: Fetch the latest two weather updates for the specified city
-    latest_updates = get_latest_weather_data(alert_city)
-    if latest_updates:
-        temp1, time1 = latest_updates[0]  # Most recent entry
-        temp2, time2 = latest_updates[1]  # Second most recent entry
-        
-        if temp1 > threshold:
-            print(f"Temperature breach detected for {alert_city}: {temp1}°C")
-        else:
-            print(f"No alerts detected, latest temperature for {alert_city}: {temp1}°C")
+    Args:
+        city (str): The name of the city for which to check alerts.
 
-        # Check if both entries exceed the threshold
-        if temp1 > threshold and temp2 > threshold:
-            print(f"⚠️ ALERT: {alert_city} temperature has exceeded {threshold}°C for 2 consecutive updates!")
-        else:
-            print(f"No alerts detected, latest temperature for {alert_city}: {temp1}°C")
-    else:
-        print(f"Not enough weather data for {alert_city}.")
+    Returns:
+        None
+    """
+    
+    # Retrieve the latest weather updates for the specified city
+    latest_updates = get_latest_weather_data(city)
+
+    # Check if sufficient data is available
+    if not latest_updates or len(latest_updates) < 2:
+        print(f"Not enough weather data for {city}.")
+        return
+
+    # Unpack the most recent temperature readings
+    most_recent_temp, _ = latest_updates[0]
+    second_recent_temp, _ = latest_updates[1]
+
+    print(f"Latest temperature for {city}: {most_recent_temp}°C")
+
+    # Check if the most recent temperature exceeds the threshold
+    if most_recent_temp > TEMP_THRESHOLD:
+        print(f"Temperature breach detected for {city}: {most_recent_temp}°C")
+
+        # Check for consecutive breaches
+        if second_recent_temp > TEMP_THRESHOLD:
+            print(f"⚠️ ALERT: {city} temperature has exceeded {TEMP_THRESHOLD}°C for 2 consecutive updates!")
+
+if __name__ == "__main__":
+    # Example usage of the check_alerts function
+    check_alerts("New York")

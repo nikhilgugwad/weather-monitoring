@@ -1,336 +1,211 @@
+# Real-Time Data Processing System for Weather Monitoring with Rollups and Aggregates
 
+## Table of Contents
+1. [Introduction](#introduction)
+2. [Folder Structure](#folder-structure)
+3. [Tech Stack Used](#tech-stack-used)
+4. [Installation Instructions](#installation-instructions)
+5. [Usage](#usage)
+6. [Module Descriptions](#module-descriptions)
+   - [alerts.py](#alertspy)
+   - [config.py](#configpy)
+   - [database.py](#databasepy)
+   - [scheduler.py](#schedulerpy)
+   - [visualizations.py](#visualizationspy)
+   - [weather_api.py](#weather_apipy)
+7. [Features](#features)
+8. [Future Improvements](#future-improvements)
+9. [Collaborations](#collaborations)
+10. [License](#license)
 
-## **Project Title and Overview**
+## Introduction
 
-### **Project Title**  
-**Real-Time Data Processing System for Weather Monitoring with Rollups and Aggregates**  
+The **Real-Time Data Processing System for Weather Monitoring with Rollups and Aggregates** project is a Python-based application designed to monitor and analyze weather conditions in specified cities. It retrieves real-time weather data from an external API, stores this information in a local SQLite database, and provides various functionalities such as temperature alerts and visualizations of weather trends over time. The goal of this project is to empower users with insights into weather patterns, helping them make informed decisions based on current and historical weather data.
 
----
+## Folder Structure
 
-### **Project Overview**
+The project directory is organized as follows:
 
-#### **Description:**  
-
-This project implements a real-time weather monitoring system that collects, processes, and summarizes weather data from the OpenWeatherMap API. The system focuses on metro cities in India and allows users to define alert thresholds for temperature or weather conditions. 
-
-The data is periodically fetched, aggregated into daily summaries, and stored for historical analysis. Summaries include metrics such as average, maximum, and minimum temperatures, along with the dominant weather condition for each day. Additionally, alert notifications are triggered when user-defined thresholds are breached.
-
-The project supports visualizations to display trends over time, providing insights into historical weather conditions.
-
-#### **Key Objectives:**
-- **Real-time monitoring:** Continuously fetch weather data for major cities in India.
-- **Rollups and aggregation:** Generate daily summaries with key metrics.
-- **Alerts:** Trigger notifications when weather conditions cross defined thresholds.
-- **Visualization:** Display trends and insights using graphs.
-
----
-
-## **Features and Functionalities**
-
-###  **Real-Time Data Retrieval**
-- **Description:**  
-  The system continuously fetches weather data from the OpenWeatherMap API at a **configurable interval** (e.g., every 5 minutes).  
-- **Monitored Cities:** Delhi, Mumbai, Chennai, Bangalore, Kolkata, Hyderabad.
-- **Weather Data Retrieved:**  
-  - **Main:** Main weather condition (e.g., Rain, Snow, Clear).  
-  - **Temp:** Current temperature in Celsius.
-  - **Feels_like:** Perceived temperature in Celsius.
-  - **dt:** Timestamp of the data update (Unix timestamp).
-
----
-
-### **Daily Weather Summary (Rollups and Aggregates)**
-- **Description:**  
-  At the end of each day, the system rolls up the collected data and generates **daily summaries**.  
-- **Metrics in Daily Summary:**
-  - **Average Temperature:** Calculated across all updates for the day.
-  - **Maximum Temperature:** The highest recorded temperature during the day.
-  - **Minimum Temperature:** The lowest recorded temperature during the day.
-  - **Dominant Weather Condition:** The most frequently occurring weather condition for the day (e.g., Rain, Clear). If two conditions occur with the same frequency, the earliest one is selected.
-
----
-
-### **Alerting System with Configurable Thresholds**
-- **Description:**  
-  Users can define alert thresholds to track specific weather conditions (e.g., a temperature above 35°C for two consecutive updates).  
-- **Alert Triggers:**  
-  - If a defined temperature threshold is breached, a notification is triggered.
-  - Alerts can be displayed on the **console** or configured for **email notifications** (open-ended for future development).
-
----
-
-### **Visualizations**
-- **Description:**  
-  The system supports visualization of:
-  - **Daily summaries** with metrics like average, max, and min temperatures.
-  - **Historical weather trends** to analyze patterns.
-  - **Triggered alerts** for easier tracking and insights.
-
----
-
-### **User Configurable Settings**
-- **Configurable Options:**
-  - **API Key:** Users can provide their own API key to access the OpenWeatherMap API.
-  - **Interval Duration:** Set how frequently the system fetches weather data (e.g., every 5 minutes)..
-  - **Alert Thresholds:** Define specific weather conditions or temperature limits to receive alerts.
-
----
-
-### **3. System Design and Architecture**
-
-In this section, we will document how the system is structured and the flow of data across various components. This will include a high-level overview and descriptions of each part of the architecture.
-
----
-
-## **System Design and Architecture**
-
-### **High-Level Architecture**
-The system follows a **modular design**, allowing easy extension and maintainability. Below is an overview of the main components:  
-
-**Components:**
-1. **Data Fetcher Module:** 
-   - Fetches real-time weather data from the OpenWeatherMap API.
-2. **Scheduler:** 
-   - Triggers periodic API calls at configurable intervals.
-3. **Aggregator Module:** 
-   - Computes daily weather summaries and aggregates.
-4. **Alert Manager:** 
-   - Monitors thresholds and triggers alerts when necessary.
-5. **Persistent Storage:** 
-   - Stores the weather data and daily summaries (e.g., in files or a database).
-6. **Visualization Interface:** 
-   - Displays data summaries, historical trends, and triggered alerts.
-
----
-
-### **Flow of Data Across the System**
-1. **Weather Data Retrieval:**
-   - The **Scheduler** triggers the **Scheduler** module at a configurable interval (e.g., every 5 minutes).
-   - The **Scheduler Module** retrieves weather data from the OpenWeatherMap API and sends it to the **Weather.db**.
-
-2. **Data Processing:**
-   - The **Weather.db** Stores the individual weather updates in the **Persistent Storage** for later use.
-
-3. **Daily Rollups and Aggregates:**
-   - At the end of each day, the **Aggregator Module**:
-     - Fetches the weather updates from storage.
-     - Calculates metrics such as average, min, max temperature, and dominant weather condition.
-     - Stores the daily summary in the **Persistent Storage**.
-
-4. **Alerting System:**
-   - The **Alert Manager** continuously monitors the latest weather updates.
-   - If any user-defined thresholds are breached (e.g., temperature exceeds 35°C for two consecutive updates), the **Alert Manager** triggers an alert.
-
-5. **Visualization Interface:**
-   - Users can view:
-     - Daily weather summaries.
-     - Historical trends.
-     - Triggered alerts.
-
----
-
-### **Detailed Module Descriptions**
-
-#### **1. Scheduler Module:**
-- **Function:** 
-  - Triggers API calls at set intervals using the `schedule` library.
-- **Implementation:** 
-  - Uses `schedule.every(interval).minutes` to trigger the **Data Fetcher**.
-
-#### **2. Data Fetcher Module:**
-- **Function:** 
-  - The `weather_api.py` connects to the OpenWeatherMap API, retrieves weather data, and passes it to the **Data Processor**.
-- **Implementation:** 
-  - Uses Python's `requests` library to perform API calls.
-
-#### **3. Aggregator Module:**
-- **Function:** 
-  - Rolls up daily data and computes summary statistics.
-- **Implementation:** 
-  - Uses built-in Python functions for averages and condition frequency.
-
-#### **4. Alert Manager Module:**
-- **Function:** 
-  - `alerts.py` monitors user-defined thresholds and triggers alerts.
-- **Implementation:** 
-  - Supports console alerts, with future scope for email notifications.
-
-#### **6. Visualization Interface:**
-- **Function:** 
-  - `Visualizations.py` Displays weather summaries and trends in a user-friendly format.
-- **Implementation:** 
-  - Placeholder for future visualization implementation (e.g., using `matplotlib`).
-
----
-
-## **Setup and Installation Guide**
-
-### 1. **Prerequisites**
-Before setting up the project, ensure you have the following tools and resources installed:
-
-- **Python 3.11.9** installed.  
-  Verify using:
-  ```bash
-  python --version
-  ```
-- **API Key from OpenWeatherMap**  
-  Sign up at [OpenWeatherMap](https://openweathermap.org/) and generate an API key.
-
-- **Virtual Environment (Optional)**  
-  It’s recommended to use a virtual environment to manage dependencies:
-  ```bash
-  python -m venv venv
-  source venv/bin/activate    # On Linux/Mac
-  venv\Scripts\activate       # On Windows
-  ```
-
----
-
-### 2. **Clone the Repository**
-If using GitHub, clone the repository using:
-```bash
-git clone "https://github.com/nikhilgugwad/weather-monitoring.git"
-cd <repository-folder>
+```
+weather-monitoring/
+│
+├── src/                    # Source code for the application
+│   ├── alerts.py           # Module for checking temperature alerts
+│   ├── config.py           # Configuration settings
+│   ├── database.py         # Database interactions
+│   ├── scheduler.py        # Job scheduling for data fetching and processing
+│   ├── visualizations.py    # Data visualization functions
+│   └── weather_api.py      # Module for fetching weather data from the API
+│
+├── .env                    # Environment variables (e.g., API key)
+├── .gitignore              # Files and directories to ignore in Git
+├── README.md               # Project overview and instructions
+├── requirements.txt        # List of Python package dependencies
+└── weather.db              # SQLite database file for storing weather data
 ```
 
----
+## Tech Stack Used
 
-### 3. **Install Dependencies**
-Use the provided `requirements.txt` file to install all necessary dependencies:
-```bash
-pip install -r requirements.txt
-```
+- **Python**: The primary programming language used for developing the application.
+- **SQLite**: A lightweight, serverless database used to store weather data locally.
+- **Requests**: A Python library for making HTTP requests to fetch weather data from an external API.
+- **Matplotlib**: A plotting library used for creating visualizations of weather trends.
+- **Schedule**: A library for scheduling periodic tasks, such as fetching new weather data.
+- **dotenv**: A library for loading environment variables from a `.env` file.
 
-#### **Dependencies:**
-- `requests`: For making API calls.
-- `schedule`: To trigger periodic tasks.
-- `sqlite3` (Built-in with Python): To store data summaries.
-- `matplotlib` (Optional): For future visualization.
+## Installation Instructions
 
----
+To set up the Weather Monitoring project on your local machine, follow these steps:
 
-### 4. **Configuration**
-Create a **`.env`** file in the root directory to store your API key and other configurable settings.
-
-**Example `.env` file:**
-```
-API_KEY=<your-openweathermap-api-key>
-```
-
----
-
-### 5. **Running the Application**
-
-1. **Start the Scheduler and Data Fetcher:**
-   Use the following command to run the scheduler and start periodic weather data retrieval:
+1. **Clone the Repository**:
    ```bash
-   python scheduler.py
+   git clone https://github.com/yourusername/weather-monitoring.git
+   cd weather-monitoring
    ```
 
-2. **Simulate Data Rollups:**
-   To simulate daily rollups and view summary results, run:
+2. **Create a Virtual Environment** (optional but recommended):
    ```bash
-   python database.py
+   python -m venv venv  # Create a virtual environment named 'venv'
+   source venv/bin/activate  # Activate on macOS/Linux
+   .\venv\Scripts\activate  # Activate on Windows
    ```
 
-3. **Trigger Alerts:**
-   Define temperature or weather condition thresholds in the **alert_manager.py** file and run:
+3. **Install Dependencies**:
    ```bash
-   python alerts.py
-   ```
-   Alerts, if triggered, will be displayed in the console during execution.
-
-
-1. **SQLite Database Viewer:**  
-   You can use the following command to view the stored weather summaries:
-   ```bash
-   sqlite3 weather.db "SELECT * FROM daily_weather_summary;"
+   pip install -r requirements.txt  # Install required packages listed in requirements.txt
    ```
 
----
+4. **Set Up Environment Variables**:
+   - Create a `.env` file in the root directory if it does not exist.
+   - Add your API key to the `.env` file:
+     ```
+     API_KEY=your_api_key_here
+     ```
 
-### 6. **Troubleshooting Common Issues**
+5. **Initialize the Database**:
+   - Run the `src/database.py` script to create the necessary tables in `weather.db`:
+     ```bash
+     python src/database.py
+     ```
 
-1. **API Key Errors:**
-   - If the system cannot connect to the OpenWeatherMap API, check the API key in the `.env` file.
+## Usage
 
-2. **Module Not Found Errors:**
-   - Run `pip install -r requirements.txt` again to ensure all dependencies are installed.
+To use the Weather Monitoring application, follow these steps:
 
-3. **Scheduler Not Running:**
-   - Verify that `schedule` is properly installed and check for any syntax issues in `scheduler.py`.
+1. **Run the Scheduler**:
+   - Start the scheduler to begin fetching and processing weather data:
+     ```bash
+     python src/scheduler.py  # Replace "Delhi" with any city you want to monitor.
+     ```
 
----
+2. **Visualize Weather Data**:
+   - You can visualize temperature trends, dominant weather conditions, and alerts by running the respective functions in `src/visualizations.py`:
+     ```bash
+     python src/visualizations.py  # Uncomment desired plot function calls at the bottom of the script.
+     ```
 
-### **Known Issues and Future Improvements**
+3. **Check Alerts**:
+   - The application will automatically check for temperature alerts based on predefined thresholds.
 
+## Module Descriptions
 
+### alerts.py
 
-#### **Known Issues**  
+This module is responsible for checking temperature alerts based on predefined thresholds.
 
-1. **Limited Error Handling:**  
-   - If the OpenWeatherMap API is temporarily down or the API key is invalid, the system may crash or fail to fetch data.  
-   - **Improvement:** Add retry logic and better exception handling for failed API calls.
+- **Functions**:
+  - `check_alerts(city: str) -> None`: 
+    - Retrieves the latest weather data for a specified city from the database.
+    - Compares current temperatures against a threshold defined in `config.py`.
+    - Prints alert messages if temperatures exceed the threshold or if there are consecutive breaches.
 
-2. **Static Alert Thresholds:**  
-   - Currently, the alert thresholds are hardcoded through the `.env` file and do not support dynamic user input.  
-   - **Improvement:** Implement a user interface or API to modify thresholds at runtime.
+### config.py
 
-3. **Basic Storage in SQLite:**  
-   - The current system stores data locally using SQLite, which might not scale for larger datasets.  
-   - **Improvement:** Transition to a more scalable database like PostgreSQL or MySQL if needed.
+This module defines configuration variables used throughout the application.
 
-4. **Limited Support for Weather Parameters:**  
-   - Currently, the system only fetches basic parameters (temperature, feels-like, and weather conditions).  
-   - **Improvement:** Extend support to more parameters like humidity, wind speed, and forecasts.
+- **Functions**:
+  - `load_config() -> dict`: 
+    - Loads configuration variables from environment variables and sets default values.
+    - Returns a dictionary containing all configuration variables such as API keys, cities to monitor, base URL for API requests, fetch intervals, and temperature thresholds.
 
+### database.py
 
+This module handles all interactions with the SQLite database.
 
-#### **Future Improvements**
+- **Functions**:
+  - `create_table() -> None`: 
+    - Creates necessary tables (`weather_data` and `daily_summary`) in the SQLite database if they do not already exist.
+  
+  - `calculate_daily_summary(city: str, date: str) -> Optional[None]`: 
+    - Computes daily summaries (average, max, min temperatures) for a specified city and date based on stored weather data.
+  
+  - `get_daily_summary(city: str, date: Optional[str] = None) -> Optional[List[tuple]]`: 
+    - Retrieves daily summary records from the database for a specific city and optional date.
+  
+  - `insert_weather_data(data: dict) -> None`: 
+    - Inserts new weather data records into the `weather_data` table.
+  
+  - `get_latest_weather_data(city: str) -> Optional[List[tuple]]`: 
+    - Fetches the latest two entries of weather data for a specified city from the database.
 
-1. **Support for Additional Cities:**  
-   - Expand beyond Indian metros and allow users to specify any city globally for weather monitoring.
+### scheduler.py
 
-2. **Notification System:**  
-   - Add email or SMS notifications for alerts using services like Twilio or SendGrid.
+This module manages scheduled tasks for fetching and processing weather data.
 
-3. **Historical Data Visualization:**  
-   - Implement visualizations to show trends over weeks or months, not just daily summaries.
+- **Functions**:
+  - `job_manual_insert(city: str) -> None`: 
+    - Fetches current weather data for a specified city using the `get_weather_data` function from `weather_api.py` and inserts it into the database.
+  
+  - `job_check_alerts(city: str) -> None`: 
+    - Checks for temperature alerts by invoking `check_alerts` from `alerts.py`.
+  
+  - `job_update_summary(city: str) -> None`: 
+    - Updates daily summaries by calculating them at a specific time each day (23:59).
+  
+  - `scheduler(city: str) -> None`: 
+    - Schedules jobs to run periodically (every 5 minutes) or at specific times (daily summary update).
 
-4. **Deployment via Docker:**  
-   - Package the system in a Docker container for easy deployment across environments.
+### visualizations.py
 
-5. **Unit and Integration Tests:**  
-   - Develop a comprehensive test suite to ensure system reliability and catch potential bugs early.
+This module is responsible for visualizing weather data using Matplotlib.
 
----
+- **Functions**:
+  - `plot_temperature_trend(city: str) -> None`: 
+    - Visualizes average, max, and min temperature trends over time using line plots.
+  
+  - `plot_dominant_weather(city: str) -> None`: 
+    - Creates a bar chart showing dominant weather conditions based on historical data stored in the database.
+  
+  - `plot_alerts_timeline(city: str) -> None`: 
+    - Plots a timeline indicating when temperature alerts were triggered for a specified city.
 
-### **Project Conclusion**
+### weather_api.py
 
-In this project, we developed a **Real-Time Data Processing System for Weather Monitoring** that efficiently retrieves and processes weather data from the OpenWeatherMap API. The system provides valuable insights through daily rollups and aggregates, along with configurable alerts for extreme weather conditions.  
+This module handles interactions with the external weather API to fetch current weather data.
 
-#### **Key Accomplishments**  
-1. **Real-Time Weather Monitoring:**  
-   - Successfully integrated with OpenWeatherMap API to fetch live weather data for six major Indian metros at configurable intervals.
+- **Functions**:
+  - `get_weather_data(city: str) -> dict`: 
+    - Constructs an API request URL using parameters such as city name and API key.
+    - Sends an HTTP GET request to retrieve current weather data.
+    - Parses and returns relevant fields (temperature, feels like temperature, main weather condition).
+    - Inserts fetched data into the database using `insert_weather_data`.
 
-2. **Data Aggregation and Rollups:**  
-   - Implemented logic to calculate daily aggregates such as average, maximum, and minimum temperatures and identified the dominant weather condition for each day.
+## Features
 
-3. **Storage and Persistence:**  
-   - Stored weather data summaries in a local SQLite database for further analysis and historical tracking.
+- Fetches real-time weather data from an external API.
+- Stores historical weather data in a local SQLite database.
+- Provides temperature alerts when thresholds are exceeded.
+- Visualizes temperature trends, dominant weather conditions, and alert timelines using Matplotlib.
 
-4. **Scalability and Maintainability:**  
-   - Designed the system to be modular, allowing future integration with additional weather parameters, visualizations, and notification mechanisms.
+## Future Improvements
 
-#### **Challenges Encountered**  
-- Handling network errors and API timeouts required robust exception handling.
-- Limited scope for visualization, which can be improved in future iterations.
-- Storage using SQLite has constraints in scalability for long-term data retention.
+Here are some potential improvements that could be made to enhance the functionality of this project:
 
-#### **Future Scope and Recommendations**  
-- **Expand Data Coverage:** Support more cities or allow user-specified locations.
-- **Enhanced User Experience:** Add dashboards and visualizations to display summaries and alerts.
-- **Dynamic Alert Configuration:** Implement a user interface to update alert thresholds without needing to modify code or environment files.
-- **Deploy to the Cloud:** Host the project using Docker or cloud services for better accessibility and scalability.
+- **User Interface (UI)**: Develop a web or desktop UI for easier interaction with the application.
+- **Notifications**: Implement a notification system (e.g., email or SMS) to alert users when certain conditions are met.
+- **Extended Forecasts**: Integrate additional APIs to provide extended weather forecasts beyond current conditions.
+- **Data Analysis**: Include more advanced data analysis features, such as predictive modeling based on historical data.
 
-With this, the core objectives of the project have been successfully achieved. The system is functional, maintains good modularity, and provides the foundation for further enhancements in alerting, storage, and visualizations.
+## Collaborations
+
+This project is open for collaborations! If you would like to contribute, please fork the repository, make your changes, and submit a pull request. Contributions can include bug fixes, new features, documentation improvements, or anything else that enhances the project.

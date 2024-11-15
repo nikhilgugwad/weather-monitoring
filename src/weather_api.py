@@ -2,9 +2,15 @@ import requests  # Library to make HTTP requests
 from config import API_KEY, BASE_URL, CITIES  # Importing configurations
 from database import insert_weather_data  # Importing insert function
 
+def get_weather_data(city: str) -> dict:
+    """Fetches weather data for a specific city.
 
-def get_weather_data(city):
-    """Fetches weather data for a specific city."""
+    Args:
+        city (str): The name of the city for which to fetch weather data.
+
+    Returns:
+        dict: A dictionary containing weather data if successful; None if failed.
+    """
     # Construct the complete API endpoint for the given city
     url = f"{BASE_URL}?q={city}&appid={API_KEY}&units=metric"  # Metric = Celsius
 
@@ -19,17 +25,11 @@ def get_weather_data(city):
         # Parse the response JSON
         data = response.json()
 
-        # Debug: Printing the raw data received
-        # print(f"Data received for {city}: {data}")
-
         # Extract relevant fields from the response
         weather_main = data["weather"][0]["main"]  # e.g., "Rain"
         temp = data["main"]["temp"]  # e.g., 30.5
         feels_like = data["main"]["feels_like"]  # e.g., 32.1
         timestamp = data["dt"]  # Unix timestamp
-
-        # Debug: Show parsed values for understanding
-        # print(f"City: {city}, Main: {weather_main}, Temp: {temp}°C, Feels Like: {feels_like}°C, Time: {timestamp}")
 
         # Return the parsed data as a dictionary
         weather_data = {
@@ -44,6 +44,8 @@ def get_weather_data(city):
 
         # Insert the data into the database
         insert_weather_data(weather_data)
+        
+        return weather_data  # Return fetched data for further use if needed
     
     else:
         # If the request failed, print an error message and return None
@@ -53,6 +55,4 @@ def get_weather_data(city):
 # Test the function by fetching weather data for all cities
 if __name__ == "__main__":
     for city in CITIES:
-        get_weather_data(city) # Fetch and store weather data for each city
-        # data = get_weather_data(city)  # Fetch weather data for each city
-        # print(data)  # Print the returned dictionary for inspection
+        get_weather_data(city)  # Fetch and store weather data for each city

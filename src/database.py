@@ -1,10 +1,11 @@
 import sqlite3  # SQLite library to interact with the database
 from collections import Counter
+from typing import List, Dict, Optional
 
 DB_NAME = "weather.db"  # Database file name
 
-def create_table():
-    """Create the weather_data table if it doesn't exist."""
+def create_table() -> None:
+    """Create the weather_data and daily_summary tables if they don't exist."""
     conn = sqlite3.connect(DB_NAME)  # Connect to the database (creates it if not exists)
     cursor = conn.cursor()  # Cursor to execute SQL commands
 
@@ -38,8 +39,17 @@ def create_table():
     conn.close()  # Close the database connection
     print("Databases and tables created successfully.")
 
-def calculate_daily_summary(city, date):
-    """Calculate daily summary for a given city and date."""
+def calculate_daily_summary(city: str, date: str) -> Optional[None]:
+    """Calculate and store the daily summary for a given city and date.
+
+    Args:
+        city (str): The name of the city.
+        date (str): The date in 'YYYY-MM-DD' format.
+
+    Returns:
+        None: If successful; prints an error message if no data is found.
+    """
+    
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
 
@@ -66,12 +76,7 @@ def calculate_daily_summary(city, date):
     weather_conditions = [row[1] for row in rows]
     dominant_weather = Counter(weather_conditions).most_common(1)[0][0]
 
-    # Debug: Print calculated values
-    # print(f"Summary for {city} on {date}: Avg={avg_temp}, Max={max_temp}, Min={min_temp}, Dominant={dominant_weather}")
-
     # Insert or update the summary into the daily_summary table
-    # If your table contains a date which matches the date which we trying to insert, then a new row will not be created instead it will update the preexisting row whach has the same date, beacuse date is a unique constraint whcih should not have duplicate elements in the table, if you have multiple cities that share the same date in your table "daily_summary" then do update city as following in "insert_query" "city = excluded.city", ask chatbot for more clarification regarding excluded notation.  
-    
     insert_query = """
     INSERT INTO daily_summary (date, city, avg_temp, max_temp, min_temp, dominant_weather)
     VALUES (?, ?, ?, ?, ?, ?)
@@ -81,13 +86,23 @@ def calculate_daily_summary(city, date):
         min_temp = excluded.min_temp,
         dominant_weather = excluded.dominant_weather
     """
+    
     cursor.execute(insert_query, (date, city, avg_temp, max_temp, min_temp, dominant_weather))
     
     conn.commit()
     conn.close()
 
-def get_daily_summary(city, date=None):
-    """Retrieve the daily summary for a specific city and date."""
+def get_daily_summary(city: str, date: Optional[str] = None) -> Optional[List[tuple]]:
+    """Retrieve the daily summary for a specific city and optional date.
+
+    Args:
+        city (str): The name of the city.
+        date (str, optional): The date in 'YYYY-MM-DD' format. If None, fetches all summaries for the city.
+
+    Returns:
+        List[tuple]: A list of tuples containing summary data if found; otherwise None.
+    """
+    
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
 
@@ -100,7 +115,7 @@ def get_daily_summary(city, date=None):
         query = "SELECT * FROM daily_summary WHERE city = ?"
         cursor.execute(query, (city,))
 
-    summary = cursor.fetchall() # Use fetchall() to get multiple rows
+    summary = cursor.fetchall()  # Use fetchall() to get multiple rows
     conn.close()
 
     if summary:
@@ -110,8 +125,17 @@ def get_daily_summary(city, date=None):
         print(f"No summary found for {city}.")
         return None
 
-def insert_weather_data(data):
-    """Insert a weather data record into the weather_data table."""
+def insert_weather_data(data: Dict[str, str]) -> None:
+    """Insert a weather data record into the weather_data table.
+
+    Args:
+        data (dict): A dictionary containing weather data with keys 
+                     'city', 'weather_main', 'temp', 'feels_like', and 'timestamp'.
+
+    Returns:
+        None: Prints a success message upon successful insertion.
+    """
+    
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
 
@@ -120,35 +144,44 @@ def insert_weather_data(data):
     INSERT INTO weather_data (city, weather_main, temp, feels_like, timestamp)
     VALUES (?, ?, ?, ?, ?)
     """
-    # Debug: Print the values being inserted
+
+   # Debug: Print the values being inserted
     print(f"Inserting data: {data}")
 
-    # Execute the query with data values
+   # Execute the query with data values
     cursor.execute(query, (data["city"], data["weather_main"], data["temp"], data["feels_like"], data["timestamp"]))
     conn.commit()  # Commit the changes
     conn.close()  # Close the connection
 
     print(f"Data for {data['city']} inserted successfully.")
 
-def get_latest_weather_data(city):
-    """Retrieve the latest two weather data entries for a specific city."""
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
+def get_latest_weather_data(city: str) -> Optional[List[tuple]]:
+   """Retrieve the latest two weather data entries for a specific city.
 
-    query = """
-    SELECT temp, timestamp FROM weather_data
-    WHERE city = ?
-    ORDER BY timestamp DESC LIMIT 2
-    """
-    cursor.execute(query, (city,))
-    rows = cursor.fetchall()  # Fetch two latest rows
-    conn.close()
+   Args:
+       city (str): The name of the city.
 
-    return rows if len(rows) == 2 else None
+   Returns:
+       List[tuple]: A list of tuples containing temperature and timestamp 
+                    if two entries are found; otherwise None.
+   """
+   
+   conn = sqlite3.connect(DB_NAME)
+   cursor = conn.cursor()
 
-# Test the database setup
-# Test the functions
+   query = """
+   SELECT temp, timestamp FROM weather_data
+   WHERE city = ?
+   ORDER BY timestamp DESC LIMIT 2
+   """
+   cursor.execute(query, (city,))
+   rows = cursor.fetchall()  # Fetch two latest rows
+   conn.close()
+
+   return rows if len(rows) == 2 else None
+
+# Test the database setup and functions when this script is run directly.
 if __name__ == "__main__":
-    create_table()  # Create the table when the script is run
-    calculate_daily_summary("Delhi", "2024-10-24") # Example test
-    print(get_daily_summary("Delhi")) # We can use print() to see the available summaries
+   create_table()  # Create the tables when the script is run
+   calculate_daily_summary("Delhi", "2024-10-24")  # Example test case
+   print(get_daily_summary("Delhi"))  # Print available summaries for verification
