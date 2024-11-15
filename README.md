@@ -16,7 +16,6 @@
 7. [Features](#features)
 8. [Future Improvements](#future-improvements)
 9. [Collaborations](#collaborations)
-10. [License](#license)
 
 ## Introduction
 
